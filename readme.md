@@ -1,4 +1,4 @@
-## intall dependencies
+## install dependencies
 
 - `npm install`
 
