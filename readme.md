@@ -1,7 +1,7 @@
 ## intall dependencies
 
-- npm intall
+- `npm install`
 
 ## start server
 
-- npm run dev
+- `npm run dev`
