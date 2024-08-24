@@ -1,45 +1,75 @@
-const { courses } = require("../data/courses");
-const { body, validationResult } = require("express-validator");
-const getCourses = (req, res) => {
-  console.log(courses);
-  res.json(courses);
+const { validationResult } = require("express-validator");
+const Course = require("../models/courses.model");
+
+const getAllCourses = async (req, res) => {
+  try {
+    const courses = await Course.find();
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const getCourse = (req, res) => {
-  const courseId = +req.params.courseId;
-  const course = courses.find((course) => course.id === courseId);
-  console.log(course);
-  if (!course) {
-    return res.send("course not found").status(404);
+const getCourse = async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  return res.json(course);
 };
-const addCourse = (req, res) => {
-  console.log(req.body);
+
+const addCourse = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty) {
-    return res.send(errors);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-  courses.push(req.body);
-  res.json(courses);
+  console.log(req.body);
+
+  try {
+    const course = new Course(req.body);
+    await course.save();
+    res.status(201).json(course);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
-const updateCourse = (req, res) => {
-  console.log(req.params.courseId);
-
-  const courseId = +req.params.courseId;
-  let oldCourse = courses.find((course) => course.id === courseId);
-  console.log(oldCourse);
-
-  oldCourse = { ...oldCourse, ...req.body };
-  res.send(oldCourse);
+const updateCourse = async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+    const updatedCourse = await Course.findByIdAndUpdate(courseId, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedCourse) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    res.status(200).json(updatedCourse);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
-const deleteCourse = (req, res) => {
-  console.log(req.params.courseId);
-  res.send(courses.filter((course) => course.id !== +req.params.courseId));
+
+const deleteCourse = async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
+    if (!deletedCourse) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    res.status(200).json({ message: "Course deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
+
 module.exports = {
-  getCourses,
+  getAllCourses,
   getCourse,
   addCourse,
   updateCourse,
