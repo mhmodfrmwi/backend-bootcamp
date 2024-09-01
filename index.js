@@ -9,6 +9,9 @@ const mongodbUrl = process.env.MONGODB_URL;
 const port = process.env.PORT;
 mongoose.connect(mongodbUrl).then(() => console.log("connected to db"));
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Welcome to the Home Page!");
+});
 app.use("/api/courses", coursesRouters);
 app.use("/api/users", usersRouters);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
